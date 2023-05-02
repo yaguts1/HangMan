@@ -33,4 +33,7 @@
   <ItemGroup>
     <Font Include="assets\SpringSnowstorm.ttf" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="x64\Debug\hangManGame.exe" />
+  </ItemGroup>
 </Project>
