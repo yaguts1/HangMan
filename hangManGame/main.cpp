@@ -130,7 +130,6 @@ int main()
                 {
                     guessedLetter.insert(guessedLetter.getSize(), char(event.key.code + 65));
                     guessedLettersText.setString(static_cast<std::string>(guessedLetter)); // update text content
-                    std::cout << static_cast<std::string> (guessedLetter) << std::endl;
                 }
 
             }
