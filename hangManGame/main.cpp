@@ -5,6 +5,7 @@
 #include <SFML/System.hpp>
 #include <cstdlib>
 #include <ctime>
+
 int main()
 {   
     float WINDOW_WIDTH = sf::VideoMode::getDesktopMode().width;
@@ -26,7 +27,8 @@ int main()
      auto menuSize = ImVec2(4.0f * (WINDOW_WIDTH / 24.0f), 4.0f * WINDOW_HEIGHT / 24.0f);
      bool menuIsOpened = false;
 
-     sf::String guessedLetter = "gh";
+     sf::String guessedLetter;
+     sf::String wrongLetters;
 
     // Create and set window
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Jogo da Forca", sf::Style::None);
@@ -76,21 +78,23 @@ int main()
     sf::Text keyWordSize(std::to_string(keyWord.getSize()), font, 60);
     sf::Text keyWordText(keyWord, font, 60);
     sf::Text guessedLettersText(guessedLetter, font, 60);
+    sf::Text wrongLettersText(wrongLetters, font, 60);
 
     
     keyWordSize.setFillColor(sf::Color::Black);
     keyWordText.setFillColor(sf::Color::Black);
     message.setFillColor(sf::Color::Black);
     guessedLettersText.setFillColor(sf::Color::Black);
+    wrongLettersText.setFillColor(sf::Color::Red);
 
     
 
     sf::FloatRect textRect = message.getLocalBounds();
-    message.setOrigin(textRect.left + textRect.width / 2.0f,
-        textRect.top + textRect.height / 2.0f);
-    message.setPosition(sf::Vector2f(window.getSize().x / 2.0f,
-        window.getSize().y / 2.0f));
-
+    message.setOrigin(textRect.left + textRect.width / 2.0f,textRect.top + textRect.height / 2.0f);
+    message.setPosition(sf::Vector2f(window.getSize().x / 2.0f,window.getSize().y / 2.0f));
+    sf::FloatRect wrongLettersTextRect = wrongLettersText.getLocalBounds();
+    wrongLettersText.setOrigin(wrongLettersTextRect.left + wrongLettersTextRect.width / 2.0f, wrongLettersTextRect.top + wrongLettersTextRect.height / 2.0f);
+    wrongLettersText.setPosition(sf::Vector2f(window.getSize().x / 1.5f, wrongLettersTextRect.top));
     //Setting the dashes to the size of the word
     for (int i = 0; i < keyWord.getSize(); i++)
     {
@@ -128,8 +132,20 @@ int main()
             {
                 if (event.key.code <= 26 && event.key.code >= 0)
                 {
-                    guessedLetter.insert(guessedLetter.getSize(), char(event.key.code + 65));
-                    guessedLettersText.setString(static_cast<std::string>(guessedLetter)); // update text content
+                    
+                     // update text content
+                    if (keyWord.find(char(event.key.code + 65)) == sf::String::InvalidPos)
+                    {
+                        std::cout << "Nao tem " << char(event.key.code+65)<<" na palavra." << std::endl;
+                        wrongLetters.insert(wrongLetters.getSize(), char(event.key.code + 65));
+                        wrongLettersText.setString(static_cast<std::string>(wrongLetters));
+
+                    }
+                    else
+                    {
+                        guessedLetter.insert(guessedLetter.getSize(), char(event.key.code + 65));
+                        guessedLettersText.setString(static_cast<std::string>(guessedLetter));
+                    }
                 }
 
             }
@@ -170,6 +186,7 @@ int main()
         window.draw(keyWordText);
         window.draw(keyWordDashesText);
         window.draw(guessedLettersText);
+        window.draw(wrongLettersText);
 
         ImGui::SFML::Render(window);         
         window.display();
