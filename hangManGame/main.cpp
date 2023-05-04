@@ -25,6 +25,9 @@ int main()
 
      auto menuSize = ImVec2(4.0f * (WINDOW_WIDTH / 24.0f), 4.0f * WINDOW_HEIGHT / 24.0f);
      bool menuIsOpened = false;
+
+     sf::String guessedLetter = "gh";
+
     // Create and set window
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Jogo da Forca", sf::Style::None);
     ImGui::SFML::Init(window);
@@ -72,10 +75,15 @@ int main()
     sf::Text message("Esc Pressionado! Encerrando jogo...", font, 60);
     sf::Text keyWordSize(std::to_string(keyWord.getSize()), font, 60);
     sf::Text keyWordText(keyWord, font, 60);
+    sf::Text guessedLettersText(guessedLetter, font, 60);
 
+    
     keyWordSize.setFillColor(sf::Color::Black);
     keyWordText.setFillColor(sf::Color::Black);
     message.setFillColor(sf::Color::Black);
+    guessedLettersText.setFillColor(sf::Color::Black);
+
+    
 
     sf::FloatRect textRect = message.getLocalBounds();
     message.setOrigin(textRect.left + textRect.width / 2.0f,
@@ -104,6 +112,7 @@ int main()
             ImGui::SFML::ProcessEvent(event);
             if (event.type == sf::Event::Closed)
                 window.close();
+
             else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
             {
                 if (menuIsOpened == true)
@@ -112,6 +121,16 @@ int main()
                 }
                 else {
                     menuIsOpened = true;
+                }
+
+            }
+            else if (event.type == sf::Event::KeyPressed)
+            {
+                if (event.key.code <= 26 && event.key.code >= 0)
+                {
+                    guessedLetter.insert(guessedLetter.getSize(), char(event.key.code + 65));
+                    guessedLettersText.setString(static_cast<std::string>(guessedLetter)); // update text content
+                    std::cout << static_cast<std::string> (guessedLetter) << std::endl;
                 }
 
             }
@@ -151,6 +170,7 @@ int main()
         //window.draw(keyWordSize);
         window.draw(keyWordText);
         window.draw(keyWordDashesText);
+        window.draw(guessedLettersText);
 
         ImGui::SFML::Render(window);         
         window.display();
