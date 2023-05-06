@@ -5,11 +5,10 @@
 #include <SFML/System.hpp>
 #include <cstdlib>
 #include <ctime>
-#include <thread>
-#include <chrono>
 
 int main()
 {   
+
     float WINDOW_WIDTH = sf::VideoMode::getDesktopMode().width;
     float WINDOW_HEIGHT = sf::VideoMode::getDesktopMode().height;
     sf::String keyWordDashes;
@@ -28,7 +27,6 @@ int main()
 
      auto menuSize = ImVec2(4.0f * (WINDOW_WIDTH / 24.0f), 4.0f * WINDOW_HEIGHT / 24.0f);
      bool menuIsOpened = false;
-
 
      sf::String guessedLetter;
      sf::String wrongLetters;
@@ -120,7 +118,7 @@ int main()
     //Moving the dashes to below the center of the screen
     keyWordDashesText.setOrigin(keyWordDashesText.getLocalBounds().width / 2.0f, 0);
     keyWordDashesText.setPosition(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 1.8f);   
-          
+
     while (window.isOpen())
     {
         ImGui::SFML::Update(window, clock.restart());
@@ -169,10 +167,14 @@ int main()
                         guessedLetter.insert(guessedLetter.getSize(), ' ');
                         guessedLettersText.setString(static_cast<std::string>(guessedLetter));
                     }
-                    else {
+                    else 
+                    {
+                        //Whenever someone guesses a letter that is a repetition
                         window.draw(alreadyGuessedText);
                         window.display();
-                        }
+                        sf::sleep(sf::seconds(1));
+
+                    }
 
                 }
 
@@ -208,6 +210,7 @@ int main()
 
             ImGui::PopFont();
             ImGui::End();
+
         }
         
 
@@ -222,10 +225,9 @@ int main()
         window.draw(keyWordDashesText);
         window.draw(guessedLettersText);
         window.draw(wrongLettersText);
-
+ 
         ImGui::SFML::Render(window);         
         window.display();
-        // Join the thread after the game loop has exited
     }
     ImGui::SFML::Shutdown();
     return 0;
