@@ -5,6 +5,8 @@
 #include <SFML/System.hpp>
 #include <cstdlib>
 #include <ctime>
+#include <thread>
+#include <chrono>
 
 int main()
 {   
@@ -27,8 +29,10 @@ int main()
      auto menuSize = ImVec2(4.0f * (WINDOW_WIDTH / 24.0f), 4.0f * WINDOW_HEIGHT / 24.0f);
      bool menuIsOpened = false;
 
+
      sf::String guessedLetter;
      sf::String wrongLetters;
+     sf::String alreadyGuessedLetter = "Letra já utilizada!";
 
     // Create and set window
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Jogo da Forca", sf::Style::None);
@@ -79,22 +83,32 @@ int main()
     sf::Text keyWordText(keyWord, font, 60);
     sf::Text guessedLettersText(guessedLetter, font, 60);
     sf::Text wrongLettersText(wrongLetters, font, 60);
+    sf::Text alreadyGuessedText(alreadyGuessedLetter, font, 60);
 
     
     keyWordSize.setFillColor(sf::Color::Black);
     keyWordText.setFillColor(sf::Color::Black);
     message.setFillColor(sf::Color::Black);
-    guessedLettersText.setFillColor(sf::Color::Black);
+    guessedLettersText.setFillColor(sf::Color::Green);
     wrongLettersText.setFillColor(sf::Color::Red);
+    alreadyGuessedText.setFillColor(sf::Color::Black);
 
     
-
-    sf::FloatRect textRect = message.getLocalBounds();
-    message.setOrigin(textRect.left + textRect.width / 2.0f,textRect.top + textRect.height / 2.0f);
+    sf::FloatRect messageTextRect = message.getLocalBounds();
+    message.setOrigin(messageTextRect.left + messageTextRect.width / 2.0f, messageTextRect.top + messageTextRect.height / 2.0f);
     message.setPosition(sf::Vector2f(window.getSize().x / 2.0f,window.getSize().y / 2.0f));
+
+    sf::FloatRect guessedLettersTextRect = guessedLettersText.getLocalBounds();
+    guessedLettersText.setOrigin(guessedLettersTextRect.left + guessedLettersTextRect.width / 2.0f, guessedLettersTextRect.top + guessedLettersTextRect.height / 2.0f);
+    guessedLettersText.setPosition(sf::Vector2f(window.getSize().x / 2.5f, guessedLettersTextRect.top + WINDOW_HEIGHT/10.0f));
+
     sf::FloatRect wrongLettersTextRect = wrongLettersText.getLocalBounds();
     wrongLettersText.setOrigin(wrongLettersTextRect.left + wrongLettersTextRect.width / 2.0f, wrongLettersTextRect.top + wrongLettersTextRect.height / 2.0f);
     wrongLettersText.setPosition(sf::Vector2f(window.getSize().x / 1.5f, wrongLettersTextRect.top));
+
+    sf::FloatRect alreadyGuessedLettersRect = alreadyGuessedText.getLocalBounds();
+    alreadyGuessedText.setOrigin(alreadyGuessedLettersRect.left + alreadyGuessedLettersRect.width / 2.0f, alreadyGuessedLettersRect.top + alreadyGuessedLettersRect.height / 2.0f);
+    alreadyGuessedText.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f));
     //Setting the dashes to the size of the word
     for (int i = 0; i < keyWord.getSize(); i++)
     {
@@ -105,8 +119,8 @@ int main()
     keyWordDashesText.setFillColor(sf::Color::Black);
     //Moving the dashes to below the center of the screen
     keyWordDashesText.setOrigin(keyWordDashesText.getLocalBounds().width / 2.0f, 0);
-    keyWordDashesText.setPosition(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 1.8f);
-    
+    keyWordDashesText.setPosition(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 1.8f);   
+          
     while (window.isOpen())
     {
         ImGui::SFML::Update(window, clock.restart());
@@ -115,7 +129,10 @@ int main()
         {
             ImGui::SFML::ProcessEvent(event);
             if (event.type == sf::Event::Closed)
+            {
                 window.close();
+            }
+
 
             else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
             {
@@ -134,20 +151,38 @@ int main()
                 {
                     
                      // update text content
-                    if (keyWord.find(char(event.key.code + 65)) == sf::String::InvalidPos)
+                    if (keyWord.find(char(event.key.code + 65)) == sf::String::InvalidPos && (wrongLetters.find(char(event.key.code + 65)) == sf::String::InvalidPos))
                     {
                         std::cout << "Nao tem " << char(event.key.code+65)<<" na palavra." << std::endl;
                         wrongLetters.insert(wrongLetters.getSize(), char(event.key.code + 65));
+                        wrongLetters.insert(wrongLetters.getSize(), ' ');
+                        wrongLetters.insert(wrongLetters.getSize(), '-');
+                        wrongLetters.insert(wrongLetters.getSize(), ' ');
                         wrongLettersText.setString(static_cast<std::string>(wrongLetters));
 
                     }
-                    else
+                    else if(not (keyWord.find(char(event.key.code + 65)) == sf::String::InvalidPos) && (guessedLetter.find(char(event.key.code + 65)) == sf::String::InvalidPos))
                     {
                         guessedLetter.insert(guessedLetter.getSize(), char(event.key.code + 65));
+                        guessedLetter.insert(guessedLetter.getSize(), ' ');
+                        guessedLetter.insert(guessedLetter.getSize(), '-');
+                        guessedLetter.insert(guessedLetter.getSize(), ' ');
                         guessedLettersText.setString(static_cast<std::string>(guessedLetter));
                     }
+                    else {
+                        window.draw(alreadyGuessedText);
+                        window.display();
+                        }
+
                 }
 
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter && menuIsOpened)
+            {
+                window.draw(message);
+                window.display();
+                //sf::sleep(sf::seconds(2)); // sleep for 2 seconds while the message is being displayed
+                window.close();
             }
                 
         }
@@ -190,6 +225,7 @@ int main()
 
         ImGui::SFML::Render(window);         
         window.display();
+        // Join the thread after the game loop has exited
     }
     ImGui::SFML::Shutdown();
     return 0;
